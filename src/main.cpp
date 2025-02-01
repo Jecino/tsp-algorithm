@@ -5,11 +5,6 @@
 
 using namespace std;
 
-struct Solution{
-    vector<int> sequencia;
-    double custo;
-};
-
 double calcularCusto(Data& data, vector<int>& v);
 
 Solution construcao(Data& data);
@@ -18,7 +13,7 @@ Solution construcao(Data& data);
 //ex: ./tsp instances/teste.tsp
 int main(int argc, char** argv) {
 
-    srand(time(NULL));
+    srand(time(0));
 
     //Comandos necessarios para leitura da instancia
     auto data = Data(argc, argv[1]);        
@@ -88,6 +83,24 @@ Solution ILS(int maxIter, int maxIterIls, Data& data){
     for(int i = 0; i < maxIter; i++){
         Solution s = construcao(data);
         Solution best = s;
+
+        /*
+        int iterIls = 0;
+        while(iterIls < maxIterIls){
+            BuscaLocal(s);
+            if(s.cost < best.cost){
+                best = s;
+                iterIls = 0;
+            }
+
+            s = Pertubacao(best);
+            iterIls++;
+
+            if(best.cost < bestOfAll.cost){
+                bestOfAll = best;
+            }
+        }
+        */
     }
 
     return bestOfAll;
@@ -96,7 +109,16 @@ Solution ILS(int maxIter, int maxIterIls, Data& data){
 Solution construcao(Data& data){
     Solution parcial;
     parcial.sequencia = criarSubtour(data);
-    vector<int> CL = 
+    vector<int> CL = verticesRestantes(data, parcial.sequencia);
+
+    while(!CL.empty()){
+        vector<InfoInsercao> custoInsercao = calcularCustoInsercao(data, parcial.sequencia, CL);
+        ordenarCrescente(custoInsercao);
+        double alpha = (double) rand() / RAND_MAX;
+        int selecionado = rand() % ((int) ceil(alpha * custoInsercao.size()));
+        inserirNaSolucao(parcial.sequencia, custoInsercao[selecionado]);
+        removeVector(CL, custoInsercao[selecionado].noInserido);
+    }
 
     printVector(parcial.sequencia);
 
