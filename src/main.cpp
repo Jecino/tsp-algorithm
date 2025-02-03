@@ -8,6 +8,8 @@ using namespace std;
 double calcularCusto(Data& data, vector<int>& v);
 
 Solution construcao(Data& data);
+void BuscaLocal(Solution& s, Data& data);
+Solution ILS(int maxIter, int maxIterIls, Data& data);
 
 //Comando para executar o codigo: ./tsp instances/"nome_da_instancia".tsp
 //ex: ./tsp instances/teste.tsp
@@ -24,8 +26,8 @@ int main(int argc, char** argv) {
     cout << "Dimensao: " << dimension << endl;
 
     //data.getDistance(vertice, vertice) retorna a distancia entre os vertices passados como argumentos
-    double custo_1_2 = data.getDistance(1,2);
-    cout << "Distancia entre o vertice 1 e 2: " << custo_1_2 << endl;
+    //double custo_1_2 = data.getDistance(1,2);
+    //cout << "Distancia entre o vertice 1 e 2: " << custo_1_2 << endl;
 
     //criando um vector vazio
     vector<int> solucao_arbitraria;
@@ -48,11 +50,19 @@ int main(int argc, char** argv) {
     // }
 
     //exemplo de como usar funcoes com a classe data, implementacao abaixo da main
-    double custo = calcularCusto(data, solucao_arbitraria);
+    //double custo = calcularCusto(data, solucao_arbitraria);
 
-    cout << "Custo total da solucao (1,2,...,n): " << custo << endl;
+    //cout << "Custo total da solucao (1,2,...,n): " << custo << endl;
+    int maxIter = 50;
+    int maxIterIls;
+    if(dimension >= 150){
+        maxIterIls = dimension / 2;
+    }
+    else{
+        maxIterIls = dimension;
+    }
 
-    construcao(data);
+    ILS(maxIter, maxIterIls, data);
 
     return 0;
 }
@@ -83,7 +93,13 @@ Solution ILS(int maxIter, int maxIterIls, Data& data){
     for(int i = 0; i < maxIter; i++){
         Solution s = construcao(data);
         Solution best = s;
-
+        cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia) << "\n";
+        printVector(s.sequencia);
+        cout << "\n";
+        BuscaLocal(s, data);
+        cout << "Sequencia depois da busca local | custo: "  << calcularCusto(data, s.sequencia) << "\n";
+        cout << "\n";
+        printVector(s.sequencia);
         /*
         int iterIls = 0;
         while(iterIls < maxIterIls){
@@ -120,7 +136,41 @@ Solution construcao(Data& data){
         removeVector(CL, custoInsercao[selecionado].noInserido);
     }
 
-    printVector(parcial.sequencia);
-
     return parcial;
+}
+
+void BuscaLocal(Solution& s, Data& data){
+    vector<int> opcao = {1,2,3,4,5};
+    bool melhorou = false;
+
+    while(!opcao.empty()){
+        int n = rand() % opcao.size();
+
+        switch(opcao[n]){
+            case 1:
+                melhorou = bestImprovementSwap(s, data);
+                break;
+            case 2:
+                //melhorou = bestImprovement20pt(s, data);
+                break;
+            case 3:
+                //melhorou = bestImprovement0r0pt(s,1);
+                break;
+            case 4:
+                //melhorou = bestImprovement0r0pt(s,2);
+                break;
+            case 5:
+                ///melhorou = bestImprovement0r0pt(s,3);
+                break;
+        }
+
+        if(melhorou == true){
+
+            opcao = {1,2,3,4,5};
+        }
+        else{
+
+            opcao.erase(opcao.begin() + n);
+        }
+    }
 }
