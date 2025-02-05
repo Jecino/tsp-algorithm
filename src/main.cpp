@@ -93,11 +93,11 @@ Solution ILS(int maxIter, int maxIterIls, Data& data){
     for(int i = 0; i < maxIter; i++){
         Solution s = construcao(data);
         Solution best = s;
-        cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia) << "\n";
+        cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia)  << " | s.custo: " << s.custo << "\n";
         printVector(s.sequencia);
         cout << "\n";
         BuscaLocal(s, data);
-        cout << "Sequencia depois da busca local | custo: "  << calcularCusto(data, s.sequencia) << "\n";
+        cout << "Sequencia depois da busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
         cout << "\n";
         printVector(s.sequencia);
         /*
@@ -126,13 +126,14 @@ Solution construcao(Data& data){
     Solution parcial;
     parcial.sequencia = criarSubtour(data);
     vector<int> CL = verticesRestantes(data, parcial.sequencia);
+    parcial.custo = calcularCusto(data, parcial.sequencia);
 
     while(!CL.empty()){
         vector<InfoInsercao> custoInsercao = calcularCustoInsercao(data, parcial.sequencia, CL);
         ordenarCrescente(custoInsercao);
         double alpha = (double) rand() / RAND_MAX;
         int selecionado = rand() % ((int) ceil(alpha * custoInsercao.size()));
-        inserirNaSolucao(parcial.sequencia, custoInsercao[selecionado]);
+        inserirNaSolucao(parcial, custoInsercao[selecionado]);
         removeVector(CL, custoInsercao[selecionado].noInserido);
     }
 
@@ -151,10 +152,10 @@ void BuscaLocal(Solution& s, Data& data){
                 melhorou = bestImprovementSwap(s, data);
                 break;
             case 2:
-                //melhorou = bestImprovement20pt(s, data);
+                melhorou = bestImprovement20pt(s, data);
                 break;
             case 3:
-                //melhorou = bestImprovement0r0pt(s,1);
+                melhorou = bestImprovement0r0pt(s, data, 1);
                 break;
             case 4:
                 //melhorou = bestImprovement0r0pt(s,2);

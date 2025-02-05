@@ -3,6 +3,7 @@
 
 #include "Data.h"
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -26,11 +27,12 @@ bool contem(vector<int>& vector, int target);
 vector<int> verticesRestantes(Data& data, vector<int>& subtour);
 vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, vector<int>& CL);
 void ordenarCrescente(vector<InfoInsercao>& vector);
-void inserirNaSolucao(vector<int>& sequencia, InfoInsercao& noInserido);
+void inserirNaSolucao(Solution& s, InfoInsercao& noInserido);
 void removeVector(vector<int>& vector, int& target);
 
 //BuscaLocal
 bool bestImprovementSwap(Solution& s, Data& data);
 bool bestImprovement20pt(Solution& s, Data& data);
+bool bestImprovement0r0pt(Solution& s, Data& data, int block);
 
 #endif
