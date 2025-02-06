@@ -9,7 +9,8 @@ double calcularCusto(Data& data, vector<int>& v);
 
 Solution construcao(Data& data);
 void BuscaLocal(Solution& s, Data& data);
-Solution ILS(int maxIter, int maxIterIls, Data& data);
+Solution ILS(int maxIter, int maxIterIls, int dimension, Data& data);
+Solution Pertubacao(Solution& s, Data& data, int dimension);
 
 //Comando para executar o codigo: ./tsp instances/"nome_da_instancia".tsp
 //ex: ./tsp instances/teste.tsp
@@ -30,13 +31,13 @@ int main(int argc, char** argv) {
     //cout << "Distancia entre o vertice 1 e 2: " << custo_1_2 << endl;
 
     //criando um vector vazio
-    vector<int> solucao_arbitraria;
+    //vector<int> solucao_arbitraria;
 
-    for(int i = 1; i <= dimension; i++){
+    //for(int i = 1; i <= dimension; i++){
 
         //preenchendo o vector com os vertices de 1 ate a dimensao da instancia em ordem cresente
-        solucao_arbitraria.push_back(i);
-    }
+        //solucao_arbitraria.push_back(i);
+    //}
 
     //demonstracao de como criar um vector com tamanho predefinido
     // //o tamanho do vector sera o especificado e seu conteudo sera lixo de memoria
@@ -62,7 +63,7 @@ int main(int argc, char** argv) {
         maxIterIls = dimension;
     }
 
-    ILS(maxIter, maxIterIls, data);
+    ILS(maxIter, maxIterIls, dimension, data);
 
     return 0;
 }
@@ -86,38 +87,41 @@ double calcularCusto(Data& data, vector<int>& v){
     return custo;
 }
 
-Solution ILS(int maxIter, int maxIterIls, Data& data){
+Solution ILS(int maxIter, int maxIterIls, int dimension, Data& data){
     Solution bestOfAll;
     bestOfAll.custo = INFINITY;
 
     for(int i = 0; i < maxIter; i++){
         Solution s = construcao(data);
         Solution best = s;
-        cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia)  << " | s.custo: " << s.custo << "\n";
-        printVector(s.sequencia);
-        cout << "\n";
-        BuscaLocal(s, data);
-        cout << "Sequencia depois da busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
-        cout << "\n";
-        printVector(s.sequencia);
-        /*
+        //cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia)  << " | s.custo: " << s.custo << "\n";
+        //printVector(s.sequencia);
+        //cout << "\n";
+
         int iterIls = 0;
         while(iterIls < maxIterIls){
-            BuscaLocal(s);
-            if(s.cost < best.cost){
+            BuscaLocal(s, data);
+            if(s.custo < best.custo){
                 best = s;
                 iterIls = 0;
             }
 
-            s = Pertubacao(best);
+            //s = Pertubacao(best, data, dimension);
             iterIls++;
 
-            if(best.cost < bestOfAll.cost){
+            if(best.custo < bestOfAll.custo){
                 bestOfAll = best;
             }
         }
-        */
+
+        //cout << "Sequência após busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
+        //cout << "\n";
+        //printVector(s.sequencia);
     }
+
+    cout << "Melhor Sequência de todas | custo: "  << calcularCusto(data, bestOfAll.sequencia) << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
+    cout << "\n";
+    printVector(bestOfAll.sequencia);
 
     return bestOfAll;
 }
@@ -158,10 +162,10 @@ void BuscaLocal(Solution& s, Data& data){
                 melhorou = bestImprovement0r0pt(s, data, 1);
                 break;
             case 4:
-                //melhorou = bestImprovement0r0pt(s,2);
+                melhorou = bestImprovement0r0pt(s, data, 2);
                 break;
             case 5:
-                ///melhorou = bestImprovement0r0pt(s,3);
+                melhorou = bestImprovement0r0pt(s, data, 3);
                 break;
         }
 
@@ -175,3 +179,4 @@ void BuscaLocal(Solution& s, Data& data){
         }
     }
 }
+
