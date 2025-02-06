@@ -93,11 +93,136 @@ vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, v
     return custoInsercao;
 }
 
-void inserirNaSolucao(vector<int>& sequencia, InfoInsercao& noInserido){
-    for(int i = 0; i < sequencia.size() - 1; i++){
-        if(sequencia[i] == noInserido.arestaRemovida){
-            sequencia.insert(sequencia.begin() + i + 1, noInserido.noInserido);
+void inserirNaSolucao(Solution& s, InfoInsercao& noInserido){
+    for(int i = 0; i < s.sequencia.size() - 1; i++){
+        if(s.sequencia[i] == noInserido.arestaRemovida){
+            s.sequencia.insert(s.sequencia.begin() + i + 1, noInserido.noInserido);
+            s.custo += noInserido.custo;
             return;
         }
     }
+}
+
+
+bool bestImprovementSwap(Solution& s, Data& data){
+    double bestDelta = 0;
+    int best_i, best_j;
+
+    for(int i = 1; i < s.sequencia.size() - 1; i++){
+        int vi = s.sequencia[i];
+        int vi_next = s.sequencia[i+1];
+        int vi_prev = s.sequencia[i-1];
+
+        for(int j = i + 1; j < s.sequencia.size() -1; j++){
+
+            int vj = s.sequencia[j];
+            int vj_next = s.sequencia[j+1];
+            int vj_prev = s.sequencia[j-1];
+            double delta;
+
+            if(vj_prev == vi){
+                delta = -data.getDistance(vi_prev, vi) - data.getDistance(vj, vj_next) + data.getDistance(vi_prev, vj) 
+                        +data.getDistance(vi, vj_next);  
+            }
+            else{
+                delta = -data.getDistance(vi_prev, vi) - data.getDistance(vi, vi_next) + data.getDistance(vi_prev, vj) 
+                        + data.getDistance(vj, vi_next) - data.getDistance(vj_prev, vj) - data.getDistance(vj, vj_next)
+                        + data.getDistance(vj_prev, vi) + data.getDistance(vi, vj_next);  
+            }
+            
+
+            if(delta < bestDelta){
+                bestDelta = delta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    if(bestDelta < 0){
+        swap(s.sequencia[best_i], s.sequencia[best_j]);
+        s.custo = s.custo + bestDelta;
+        return true;
+    }
+
+    return false;
+}
+
+bool bestImprovement20pt(Solution& s, Data& data){
+    double bestDelta = 0;
+    int best_i, best_j;
+
+    for(int i = 1; i < s.sequencia.size() - 1; i++){
+        int vi = s.sequencia[i];
+        int vi_next = s.sequencia[i+1];
+        int vi_prev = s.sequencia[i-1];
+
+        for(int j = i + 2; j < s.sequencia.size() -1; j++){
+
+            int vj = s.sequencia[j];
+            int vj_next = s.sequencia[j+1];
+            int vj_prev = s.sequencia[j-1];
+
+            double delta = - data.getDistance(vi, vi_next) - data.getDistance(vj, vj_next) 
+                            + data.getDistance(vi_next, vj_next) + data.getDistance(vi, vj);  
+
+            if(delta < bestDelta){
+                bestDelta = delta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+    //DEBUG: cout << bestDelta << " | " << best_i << " | " << best_j << "\n";
+    if(bestDelta < 0){
+        reverse(s.sequencia.begin() + best_i + 1, s.sequencia.begin() + best_j + 1);
+        s.custo = s.custo + bestDelta;
+        return true;
+    }
+
+    return false;
+}
+
+bool bestImprovement0r0pt(Solution& s, Data& data, int block){
+    double bestDelta = 0;
+    int best_i, best_j;
+
+    for(int i = 1; i < s.sequencia.size() - block; i++){
+        int vi_block_first = s.sequencia[i];
+        int vi_block_next = s.sequencia[i+block];
+        int vi_block_last = s.sequencia[i+block-1];
+        int vi_block_prev = s.sequencia[i-1];
+
+        for(int j = i + block; j < s.sequencia.size() - 1; j++){
+
+            int vj = s.sequencia[j];
+            int vj_next = s.sequencia[j+1];
+            int vj_prev = s.sequencia[j-1];
+
+            double delta = -data.getDistance(vi_block_last, vi_block_next) -data.getDistance(vi_block_prev, vi_block_first) 
+                            -data.getDistance(vj, vj_next) +data.getDistance(vi_block_first, vj_next) 
+                            + data.getDistance(vi_block_last, vj) + data.getDistance(vi_block_prev, vi_block_next);
+
+            if(delta < bestDelta){
+                bestDelta = delta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+    //cout << bestDelta << " | " << best_i << " | " << best_j << "\n";
+    if(bestDelta < 0){
+        //cout << "Sequencia antes de modificar | Vi = " << s.sequencia[best_i] << " | Vj = " << s.sequencia[best_j] << "\n";
+        //printVector(s.sequencia);
+        s.sequencia.insert(s.sequencia.begin() + best_j + 1, s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + block);
+        reverse(s.sequencia.begin() + best_j + 1, s.sequencia.begin() + best_j + block + 1);
+        s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + block);
+        //cout << "Sequencia apos modificar: \n";
+        //printVector(s.sequencia);
+
+        s.custo = s.custo + bestDelta;
+        return true;
+    }
+
+    return false;
 }
