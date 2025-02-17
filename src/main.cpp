@@ -180,3 +180,50 @@ void BuscaLocal(Solution& s, Data& data){
     }
 }
 
+/*
+Solution Pertubacao(Solution& s, Data& data, int dimension){
+    Solution newS = s;
+
+    int size_i = rand() % ((int) floor(dimension / 10)) + 2;
+
+    int size_j = rand() % ((int) floor(dimension / 10)) + 2;
+
+    int i = rand() % (dimension) + 1;
+    //Loop para definir novo valor de i até ele não ocorrer overflow
+    while((i + size_i) > dimension - 1){
+        i = rand() % (dimension) + 1;
+    }
+
+    int j = rand() % (dimension) + 1;
+
+
+    //Checa se o segmento j está sobreposto no segmento i e gera um j novo até não estar
+    while(j == i || (j < i && j + size_j >= i) || j < 2 || j > dimension - 1 || j + size_j >= dimension){
+        j = rand() % (dimension) + 1;;
+    }
+
+    for(int a = 0; a < size_j; a++){
+        if(j + a == i || j + a == i + size_i){
+            j = rand() % (dimension) + 1;
+        }
+    }
+
+    double delta = -data.getDistance() - data.getDistance() - data.getDistance() - data.getDistance();
+
+    cout << "\nSequencia antes da pertubação | i: " << newS.sequencia[i] << " | size_i: " << size_i  << " | j: " << newS.sequencia[j] << " | size_j: " << size_j << "\n";
+    printVector(newS.sequencia);
+
+    newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+    
+    newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
+    
+    newS.sequencia.erase(newS.sequencia.begin() + j + size_j + 1, newS.sequencia.begin() + j + size_j * 2);
+
+    newS.sequencia.erase(newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+    
+    cout << "\nSequencia depois da pertubação"<< "\n";
+    printVector(newS.sequencia);
+
+    return newS;
+}
+*/

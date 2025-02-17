@@ -60,20 +60,6 @@ vector<int> verticesRestantes(Data& data, vector<int>& subtour){
     return CL;
 }
 
-void ordenarCrescente(vector<InfoInsercao>& vector){
-    InfoInsercao temp;
-
-    for(int i = 0; i < vector.size(); i++){
-        for(int j = 1 + i; j < vector.size(); j++){
-            if(vector[j].custo < vector[i].custo){
-                temp = vector[i];
-                vector[i] = vector[j];
-                vector[j] = temp;
-            }
-        }
-    }
-}
-
 vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, vector<int>& CL){
     vector<InfoInsercao> custoInsercao((sequencia.size() - 1) * CL.size());
 
@@ -91,6 +77,21 @@ vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, v
     }
 
     return custoInsercao;
+}
+
+
+void ordenarCrescente(vector<InfoInsercao>& vector){
+    InfoInsercao temp;
+
+    for(int i = 0; i < vector.size(); i++){
+        for(int j = 1 + i; j < vector.size(); j++){
+            if(vector[j].custo < vector[i].custo){
+                temp = vector[i];
+                vector[i] = vector[j];
+                vector[j] = temp;
+            }
+        }
+    }
 }
 
 void inserirNaSolucao(Solution& s, InfoInsercao& noInserido){
@@ -193,32 +194,46 @@ bool bestImprovement0r0pt(Solution& s, Data& data, int block){
         int vi_block_last = s.sequencia[i+block-1];
         int vi_block_prev = s.sequencia[i-1];
 
-        for(int j = i + block; j < s.sequencia.size() - 1; j++){
-
+        for(int j = 1; j < s.sequencia.size() - 1; j++){
             int vj = s.sequencia[j];
             int vj_next = s.sequencia[j+1];
             int vj_prev = s.sequencia[j-1];
+ 
+            //Skip no loop caso j estiver conflitando com i
+            if((j >= i && j <= i + block) || (j + 1 >= i && j + 1 <= i + block)){
+                continue;
+            }
 
             double delta = -data.getDistance(vi_block_last, vi_block_next) -data.getDistance(vi_block_prev, vi_block_first) 
-                            -data.getDistance(vj, vj_next) +data.getDistance(vi_block_first, vj_next) 
-                            + data.getDistance(vi_block_last, vj) + data.getDistance(vi_block_prev, vi_block_next);
+                            -data.getDistance(vj, vj_next) +data.getDistance(vi_block_first, vj) 
+                            + data.getDistance(vi_block_last, vj_next) + data.getDistance(vi_block_prev, vi_block_next);
 
             if(delta < bestDelta){
                 bestDelta = delta;
                 best_i = i;
                 best_j = j;
             }
+            
         }
     }
-    //cout << bestDelta << " | " << best_i << " | " << best_j << "\n";
+    cout << bestDelta << " | " << best_i << " | " << best_j << "\n";
     if(bestDelta < 0){
-        //cout << "Sequencia antes de modificar | Vi = " << s.sequencia[best_i] << " | Vj = " << s.sequencia[best_j] << "\n";
-        //printVector(s.sequencia);
+        cout << "Sequencia antes de modificar | Vi = " << s.sequencia[best_i] << " | block: " << block << " | Vj = " << s.sequencia[best_j] << "\n";
+        printVector(s.sequencia);
+        
+        //Compensa o iterador quando ocorre inserção atrás do i escolhido
+        //Pois se for inserido antes do i, o i será igual i + block
+        if(best_i > best_j){
+            best_i = best_i + block;
+        }
+
         s.sequencia.insert(s.sequencia.begin() + best_j + 1, s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + block);
-        reverse(s.sequencia.begin() + best_j + 1, s.sequencia.begin() + best_j + block + 1);
+
+
         s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + block);
-        //cout << "Sequencia apos modificar: \n";
-        //printVector(s.sequencia);
+        
+        cout << "Sequencia apos modificar: \n";
+        printVector(s.sequencia);
 
         s.custo = s.custo + bestDelta;
         return true;
