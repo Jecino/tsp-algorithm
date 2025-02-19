@@ -2,8 +2,10 @@
 #include "AuxFun.h"
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 double calcularCusto(Data& data, vector<int>& v);
 
@@ -63,7 +65,15 @@ int main(int argc, char** argv) {
         maxIterIls = dimension;
     }
 
-    ILS(maxIter, maxIterIls, dimension, data);
+    auto start = high_resolution_clock::now();
+    Solution bestOfAll = ILS(maxIter, maxIterIls, dimension, data);
+    auto stop = high_resolution_clock::now();
+
+    auto duration = duration_cast<milliseconds>(stop - start);
+    
+    cout << "Tempo de execução do algoritmo: " << duration.count() << "ms\n";
+    cout << "\nMelhor Sequência de todas | custo: "  << calcularCusto(data, bestOfAll.sequencia) << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
+    printVector(bestOfAll.sequencia);
 
     return 0;
 }
@@ -106,22 +116,18 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, Data& data){
                 iterIls = 0;
             }
 
-            //s = Pertubacao(best, data, dimension);
+            s = Pertubacao(best, data, dimension);
             iterIls++;
+        }
 
-            if(best.custo < bestOfAll.custo){
-                bestOfAll = best;
-            }
+        if(best.custo < bestOfAll.custo){
+            bestOfAll = best;
         }
 
         //cout << "Sequência após busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
         //cout << "\n";
         //printVector(s.sequencia);
     }
-
-    cout << "Melhor Sequência de todas | custo: "  << calcularCusto(data, bestOfAll.sequencia) << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
-    cout << "\n";
-    printVector(bestOfAll.sequencia);
 
     return bestOfAll;
 }
@@ -180,7 +186,6 @@ void BuscaLocal(Solution& s, Data& data){
     }
 }
 
-/*
 Solution Pertubacao(Solution& s, Data& data, int dimension){
     Solution newS = s;
 
@@ -195,35 +200,72 @@ Solution Pertubacao(Solution& s, Data& data, int dimension){
     }
 
     int j = rand() % (dimension) + 1;
-
-
-    //Checa se o segmento j está sobreposto no segmento i e gera um j novo até não estar
-    while(j == i || (j < i && j + size_j >= i) || j < 2 || j > dimension - 1 || j + size_j >= dimension){
+    //Checa se o segmento j contem o segmento i, ou se o segmento i contem o segmento j e gera um j novo até não, ou quando faz um overflow
+    while( (i >= j && i <= j + size_j) || (i + size_i >= j && i+size_i <= j + size_j) || (j >= i && j <= i + size_i) || (j + size_j >= i && j+size_j <= i + size_i) || j < 1 || j + size_j >= dimension){
         j = rand() % (dimension) + 1;;
     }
 
-    for(int a = 0; a < size_j; a++){
-        if(j + a == i || j + a == i + size_i){
-            j = rand() % (dimension) + 1;
-        }
+    int vi = newS.sequencia[i];
+    int vi_prev = newS.sequencia[i-1];
+    int vi_last = newS.sequencia[i + size_i - 1];
+    int vi_block_next = newS.sequencia[i+size_i];
+
+    int vj = newS.sequencia[j];
+    int vj_prev = newS.sequencia[j-1];
+    int vj_last = newS.sequencia[j + size_j - 1];
+    int vj_block_next = newS.sequencia[j+size_j];
+
+    double delta = -data.getDistance(vi_prev, vi) - data.getDistance(vi_last, vi_block_next) - data.getDistance(vj_prev, vj) - data.getDistance(vj_last, vj_block_next) + data.getDistance(vi_prev, vj) + data.getDistance(vj_last, vi_block_next) + data.getDistance(vj_prev, vi) + data.getDistance(vi_last, vj_block_next);
+
+    //cout << "\nSequencia antes da pertubação | i: " << newS.sequencia[i] << " | size_i: " << size_i  << " | j: " << newS.sequencia[j] << " | size_j: " << size_j << "\n";
+    //printVector(newS.sequencia);
+
+    //Caso onde I está atrás de J
+    if(i < j){
+        //Inserir I no J
+        newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+
+        //cout << "\nSequencia depois da primeira inserção pertubação (i < j) \n";
+        //printVector(newS.sequencia);
+
+        //Inserir J no I
+        newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + j + size_j * 2);
+                
+        //cout << "\nSequencia depois da segunda inserção pertubação (i < j)\n";
+        //printVector(newS.sequencia);
+
+        //Apaga J
+        newS.sequencia.erase(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + j + size_j * 2);
+        
+        //Apaga I
+        newS.sequencia.erase(newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
     }
+    //Caso onde J está atrás de I
+    else{
+        
+        //Inserir J no I
+        newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
 
-    double delta = -data.getDistance() - data.getDistance() - data.getDistance() - data.getDistance();
+        //cout << "\nSequencia depois da primeira inserção pertubação (i > j)\n";
+        //printVector(newS.sequencia);
 
-    cout << "\nSequencia antes da pertubação | i: " << newS.sequencia[i] << " | size_i: " << size_i  << " | j: " << newS.sequencia[j] << " | size_j: " << size_j << "\n";
-    printVector(newS.sequencia);
+        //Inserir I no J
+        newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + i + size_i * 2);
+        
+        //cout << "\nSequencia depois da segunda inserção pertubação (i > j)\n";
+        //printVector(newS.sequencia);
 
-    newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+        //Apaga I
+        newS.sequencia.erase(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + i + size_i * 2);
+
+        //Apaga J
+        newS.sequencia.erase(newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
+    }
     
-    newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
-    
-    newS.sequencia.erase(newS.sequencia.begin() + j + size_j + 1, newS.sequencia.begin() + j + size_j * 2);
+    //cout << "\nSequencia depois da pertubação"<< "\n";
+    //printVector(newS.sequencia);
 
-    newS.sequencia.erase(newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+    newS.custo += delta;
     
-    cout << "\nSequencia depois da pertubação"<< "\n";
-    printVector(newS.sequencia);
-
     return newS;
 }
-*/

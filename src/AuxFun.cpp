@@ -216,10 +216,11 @@ bool bestImprovement0r0pt(Solution& s, Data& data, int block){
             
         }
     }
-    cout << bestDelta << " | " << best_i << " | " << best_j << "\n";
+    //DEBUG: cout << bestDelta << " | " << best_i << " | " << best_j << "\n";
+
     if(bestDelta < 0){
-        cout << "Sequencia antes de modificar | Vi = " << s.sequencia[best_i] << " | block: " << block << " | Vj = " << s.sequencia[best_j] << "\n";
-        printVector(s.sequencia);
+        //cout << "Sequencia antes de modificar | Vi = " << s.sequencia[best_i] << " | block: " << block << " | Vj = " << s.sequencia[best_j] << "\n";
+        //printVector(s.sequencia);
         
         //Compensa o iterador quando ocorre inserção atrás do i escolhido
         //Pois se for inserido antes do i, o i será igual i + block
@@ -232,8 +233,8 @@ bool bestImprovement0r0pt(Solution& s, Data& data, int block){
 
         s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + block);
         
-        cout << "Sequencia apos modificar: \n";
-        printVector(s.sequencia);
+        //cout << "Sequencia apos modificar: \n";
+        //printVector(s.sequencia);
 
         s.custo = s.custo + bestDelta;
         return true;
