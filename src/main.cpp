@@ -2,8 +2,10 @@
 #include "AuxFun.h"
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 double calcularCusto(Data& data, vector<int>& v);
 
@@ -14,7 +16,7 @@ Solution Pertubacao(Solution& s, Data& data, int dimension);
 
 //Comando para executar o codigo: ./tsp instances/"nome_da_instancia".tsp
 //ex: ./tsp instances/teste.tsp
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
 
     srand(time(0));
 
@@ -63,7 +65,15 @@ int main(int argc, char** argv) {
         maxIterIls = dimension;
     }
 
-    ILS(maxIter, maxIterIls, dimension, data);
+    auto start = high_resolution_clock::now();
+    Solution bestOfAll = ILS(maxIter, maxIterIls, dimension, data);
+    auto stop = high_resolution_clock::now();
+ 
+    auto duration = duration_cast<milliseconds>(stop - start);
+    
+    cout << "Tempo de execução do algoritmo: " << duration.count() << "ms\n";
+    cout << "\nMelhor Sequência de todas | custo: "  << calcularCusto(data, bestOfAll.sequencia) << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
+    printVector(bestOfAll.sequencia);
 
     return 0;
 }
@@ -106,22 +116,18 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, Data& data){
                 iterIls = 0;
             }
 
-            //s = Pertubacao(best, data, dimension);
+            s = Pertubacao(best, data, dimension);
             iterIls++;
+        }
 
-            if(best.custo < bestOfAll.custo){
-                bestOfAll = best;
-            }
+        if(best.custo < bestOfAll.custo){
+            bestOfAll = best;
         }
 
         //cout << "Sequência após busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
         //cout << "\n";
         //printVector(s.sequencia);
     }
-
-    cout << "Melhor Sequência de todas | custo: "  << calcularCusto(data, bestOfAll.sequencia) << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
-    cout << "\n";
-    printVector(bestOfAll.sequencia);
 
     return bestOfAll;
 }
@@ -180,3 +186,68 @@ void BuscaLocal(Solution& s, Data& data){
     }
 }
 
+Solution Pertubacao(Solution& s, Data& data, int dimension){
+    Solution newS = s;
+
+    int size_i = rand() % ((int) floor(dimension / 10)) + 2;
+
+    int size_j = rand() % ((int) floor(dimension / 10)) + 2;
+
+    int i = rand() % (dimension) + 1;
+    //Loop para definir novo valor de i até ele não ocorrer overflow
+    while((i + size_i) > dimension - 1){
+        i = rand() % (dimension) + 1;
+    }
+
+    int j = rand() % (dimension) + 1;
+    //Checa se o segmento j contem o segmento i, ou se o segmento i contem o segmento j e gera um j novo até não, ou quando faz um overflow
+    while( (i >= j && i <= j + size_j) || (i + size_i >= j && i+size_i <= j + size_j) || (j >= i && j <= i + size_i) || (j + size_j >= i && j+size_j <= i + size_i) || j < 1 || j + size_j >= dimension){
+        j = rand() % (dimension) + 1;;
+    }
+
+    int vi = newS.sequencia[i];
+    int vi_prev = newS.sequencia[i-1];
+    int vi_last = newS.sequencia[i + size_i - 1];
+    int vi_block_next = newS.sequencia[i+size_i];
+
+    int vj = newS.sequencia[j];
+    int vj_prev = newS.sequencia[j-1];
+    int vj_last = newS.sequencia[j + size_j - 1];
+    int vj_block_next = newS.sequencia[j+size_j];
+
+    double delta = -data.getDistance(vi_prev, vi) - data.getDistance(vi_last, vi_block_next) - data.getDistance(vj_prev, vj) - data.getDistance(vj_last, vj_block_next) + data.getDistance(vi_prev, vj) + data.getDistance(vj_last, vi_block_next) + data.getDistance(vj_prev, vi) + data.getDistance(vi_last, vj_block_next);
+
+    //Caso onde I está atrás de J
+    if(i < j){
+        //Inserir I no J
+        newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+
+        //Inserir J no I
+        newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + j + size_j * 2);
+
+        //Apaga J
+        newS.sequencia.erase(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + j + size_j * 2);
+        
+        //Apaga I
+        newS.sequencia.erase(newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
+    }
+    //Caso onde J está atrás de I
+    else{
+        
+        //Inserir J no I
+        newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
+
+        //Inserir I no J
+        newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + i + size_i * 2);
+        
+        //Apaga I
+        newS.sequencia.erase(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + i + size_i * 2);
+
+        //Apaga J
+        newS.sequencia.erase(newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
+    }
+
+    newS.custo += delta;
+    
+    return newS;
+}
