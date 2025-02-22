@@ -16,7 +16,7 @@ Solution Pertubacao(Solution& s, Data& data, int dimension);
 
 //Comando para executar o codigo: ./tsp instances/"nome_da_instancia".tsp
 //ex: ./tsp instances/teste.tsp
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
 
     srand(time(0));
 
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
     auto start = high_resolution_clock::now();
     Solution bestOfAll = ILS(maxIter, maxIterIls, dimension, data);
     auto stop = high_resolution_clock::now();
-
+ 
     auto duration = duration_cast<milliseconds>(stop - start);
     
     cout << "Tempo de execução do algoritmo: " << duration.count() << "ms\n";
@@ -217,22 +217,13 @@ Solution Pertubacao(Solution& s, Data& data, int dimension){
 
     double delta = -data.getDistance(vi_prev, vi) - data.getDistance(vi_last, vi_block_next) - data.getDistance(vj_prev, vj) - data.getDistance(vj_last, vj_block_next) + data.getDistance(vi_prev, vj) + data.getDistance(vj_last, vi_block_next) + data.getDistance(vj_prev, vi) + data.getDistance(vi_last, vj_block_next);
 
-    //cout << "\nSequencia antes da pertubação | i: " << newS.sequencia[i] << " | size_i: " << size_i  << " | j: " << newS.sequencia[j] << " | size_j: " << size_j << "\n";
-    //printVector(newS.sequencia);
-
     //Caso onde I está atrás de J
     if(i < j){
         //Inserir I no J
         newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i, newS.sequencia.begin() + i + size_i);
 
-        //cout << "\nSequencia depois da primeira inserção pertubação (i < j) \n";
-        //printVector(newS.sequencia);
-
         //Inserir J no I
         newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + j + size_j * 2);
-                
-        //cout << "\nSequencia depois da segunda inserção pertubação (i < j)\n";
-        //printVector(newS.sequencia);
 
         //Apaga J
         newS.sequencia.erase(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + j + size_j * 2);
@@ -246,24 +237,15 @@ Solution Pertubacao(Solution& s, Data& data, int dimension){
         //Inserir J no I
         newS.sequencia.insert(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
 
-        //cout << "\nSequencia depois da primeira inserção pertubação (i > j)\n";
-        //printVector(newS.sequencia);
-
         //Inserir I no J
         newS.sequencia.insert(newS.sequencia.begin() + j + size_j, newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + i + size_i * 2);
         
-        //cout << "\nSequencia depois da segunda inserção pertubação (i > j)\n";
-        //printVector(newS.sequencia);
-
         //Apaga I
         newS.sequencia.erase(newS.sequencia.begin() + i + size_i, newS.sequencia.begin() + i + size_i * 2);
 
         //Apaga J
         newS.sequencia.erase(newS.sequencia.begin() + j, newS.sequencia.begin() + j + size_j);
     }
-    
-    //cout << "\nSequencia depois da pertubação"<< "\n";
-    //printVector(newS.sequencia);
 
     newS.custo += delta;
     
