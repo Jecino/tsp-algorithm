@@ -79,21 +79,6 @@ vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, v
     return custoInsercao;
 }
 
-
-void ordenarCrescente(vector<InfoInsercao>& vector){
-    InfoInsercao temp;
-
-    for(int i = 0; i < vector.size(); i++){
-        for(int j = 1 + i; j < vector.size(); j++){
-            if(vector[j].custo < vector[i].custo){
-                temp = vector[i];
-                vector[i] = vector[j];
-                vector[j] = temp;
-            }
-        }
-    }
-}
-
 void inserirNaSolucao(Solution& s, InfoInsercao& noInserido){
     for(int i = 0; i < s.sequencia.size() - 1; i++){
         if(s.sequencia[i] == noInserido.arestaRemovida){

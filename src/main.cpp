@@ -132,6 +132,10 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, Data& data){
     return bestOfAll;
 }
 
+bool compCustoInsercao(InfoInsercao x, InfoInsercao y){
+    return x.custo < y.custo;
+}
+
 Solution construcao(Data& data){
     Solution parcial;
     parcial.sequencia = criarSubtour(data);
@@ -140,7 +144,7 @@ Solution construcao(Data& data){
 
     while(!CL.empty()){
         vector<InfoInsercao> custoInsercao = calcularCustoInsercao(data, parcial.sequencia, CL);
-        ordenarCrescente(custoInsercao);
+        sort(custoInsercao.begin(), custoInsercao.end(), compCustoInsercao);
         double alpha = (double) rand() / RAND_MAX;
         int selecionado = rand() % ((int) ceil(alpha * custoInsercao.size()));
         inserirNaSolucao(parcial, custoInsercao[selecionado]);
